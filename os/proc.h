@@ -38,8 +38,11 @@ struct proc {
 	/*
 	* LAB1: you may need to add some new fields here
 	*/
+	//counts how many times this process called each syscall ID
 	unsigned int syscall_times[500]; 
+	//remembers the cycle counter value
 	uint64 start_cycle; 
+	//initiates start_cycle
 	int start_cycle_inited; 
 };
 

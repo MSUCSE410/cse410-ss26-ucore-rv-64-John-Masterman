@@ -44,24 +44,29 @@ uint64 sys_getpid(void)
 /*
 * LAB1: you may need to define sys_task_info here
 */
-
+//return info about the current task
+// fills in status, syscall usage statistics, and running time
 uint64 sys_task_info(TaskInfo *ti)
 {
+	//pointer to current running process
 	struct proc *p = curr_proc();
 
 	ti->status = Running;
 
+	//copy syscall usage stats from proc struct
 	for (int i = 0; i < MAX_SYSCALL_NUM; i++) {
 		ti->syscall_times[i] = p->syscall_times[i];
 	}
 
+	//compute how long task has been running
 	uint64 now = get_cycle();
 	if (p->start_cycle_inited) {
 		uint64 elapsed = now - p->start_cycle;
 
-		// convert to milliseconds, rounding UP so we don't return 0 for small elapsed times
+		// convert to milliseconds, rounding up
 		ti->time = (int)((elapsed * 1000 + CPU_FREQ - 1) / CPU_FREQ);
 	} else {
+		//task hasnt started yet
 		ti->time = 0;
 	}
 
@@ -81,6 +86,7 @@ void syscall()
 	/*
 	* LAB1: you may need to update syscall counter for task info here
 	*/
+	//increment syscall on every syscall
 	if (id >= 0 && id < MAX_SYSCALL_NUM) {
 		curr_proc()->syscall_times[id]++;
 	}
@@ -101,10 +107,12 @@ void syscall()
 	/*
 	* LAB1: you may need to add SYS_taskinfo case here
 	*/
+	//hook the syscall ID	
 	case SYS_task_info:
 		ret = sys_task_info((TaskInfo *)args[0]);
 		break;
 
+	//return the pid of the current running process
 	case SYS_getpid:
 		ret = sys_getpid();
 		break;

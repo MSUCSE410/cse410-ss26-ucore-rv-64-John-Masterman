@@ -35,6 +35,7 @@ void proc_init(void)
 		/*
 		* LAB1: you may need to initialize your new fields of proc here
 		*/
+		//initialize new fields when process is created
 		memset(p->syscall_times, 0, sizeof(p->syscall_times));
 		p->start_cycle = 0;
 		p->start_cycle_inited = 0;
@@ -94,6 +95,7 @@ void scheduler(void)
 				/*
 				* LAB1: you may need to init proc start time here
 				*/
+				//set the start time when the process first becomes running
 				if (!p->start_cycle_inited) {
 					p->start_cycle = get_cycle();
 					p->start_cycle_inited = 1;
