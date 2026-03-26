@@ -41,7 +41,7 @@ uint64 sys_sched_yield()
 
 uint64 sys_gettimeofday(TimeVal *val, int _tz)
 {
-	// convert user virtual address → kernel-accessible address
+	// convert user virtual address to kernel-accessible address
 	uint64 pa = useraddr(curr_proc()->pagetable, (uint64)val);
 	if (pa == 0)
 		return -1;
@@ -61,7 +61,7 @@ uint64 sys_getpid(void)
 uint64 sys_task_info(TaskInfo *ti)
 {
 // gather runtime info for current process:
-//  syscall usage counts
+// counts syscall usage
 // total runtime since first scheduled
 	struct proc *p = curr_proc();
 
@@ -101,7 +101,7 @@ uint64 sys_mmap(uint64 addr, uint64 len, int prot)
     if (addr % PAGE_SIZE != 0)
         return -1;
 
-    // prot can only use lowest 3 bits (R/W/X)
+    // prot can only use lowest 3 bits
     if ((prot & ~0x7) != 0)
         return -1;
 
@@ -126,18 +126,15 @@ uint64 sys_mmap(uint64 addr, uint64 len, int prot)
     if (prot & PROT_WRITE) perm |= PTE_W;
     if (prot & PROT_EXEC)  perm |= PTE_X;
 
-    // FIRST PASS:
     // check that all pages in range are currently unmapped
     for (uint64 va = addr; va < end; va += PAGE_SIZE) {
-        // if already mapped → fail
+        // if already mapped it fails
         if (walkaddr(p->pagetable, va) != 0)
             return -1;
     }
 
-    // SECOND PASS:
     // allocate and map each page
     for (uint64 va = addr; va < end; va += PAGE_SIZE) {
-
         // allocate one physical page
         void *mem = kalloc();
         if (mem == 0)
@@ -146,7 +143,7 @@ uint64 sys_mmap(uint64 addr, uint64 len, int prot)
         // zero out memory
         memset(mem, 0, PAGE_SIZE);
 
-        // map virtual address → physical page
+        // map virtual address to a physical page
         if (mappages(p->pagetable, va, PAGE_SIZE, (uint64)mem, perm) != 0)
             return -1;
     }
@@ -178,15 +175,14 @@ uint64 sys_munmap(uint64 addr, uint64 len)
     // round end up to page boundary
     uint64 end = PGROUNDUP(addr + len);
 
-    // FIRST PASS:
+    
     // ensure all pages are currently mapped
     for (uint64 va = addr; va < end; va += PAGE_SIZE) {
-        // if any page is not mapped → fail
+        // if any page is not mapped it must fail
         if (walkaddr(p->pagetable, va) == 0)
             return -1;
     }
 
-    // SECOND PASS:
     // unmap and free each page
     for (uint64 va = addr; va < end; va += PAGE_SIZE) {
         // remove mapping and free physical memory
